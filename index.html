@@ -676,240 +676,353 @@
 
 <!-- Scripts -->
 <script>
-    //GSAP register plugin
-    gsap.registerPlugin(ScrollTrigger);
+    // GSAP register plugin
+        gsap.registerPlugin(ScrollTrigger);
 
-    // GSAP Animations on Load
-    gsap.fromTo(
-        'body',
-        { opacity: 0 },
-        {
-            opacity: 1, duration: 0.5, ease: 'power2.inOut',
-            onComplete: startScrollTriggerAnimations // Call this function after the initial animation
-        }
-    );
-
-    //Nav Items
-    gsap.utils.toArray('.nav-item').forEach((elem) => {
+        // GSAP Animations on Load
         gsap.fromTo(
-            elem,
-            { opacity: 0, y: -20 },
-            { opacity: 1, y: 0, duration: 0.6, delay: 0.3, ease: 'power2.out' }
+            'body',
+            { opacity: 0 },
+            {
+                opacity: 1, duration: 0.5, ease: 'power2.inOut',
+                onComplete: initializeScrollAnimations
+            }
         );
-    });
 
-    // Search Input
-    gsap.fromTo(
-        '.search-input',
-        { scale: 0.8, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.4, delay: 0.4, ease: 'back.out(1.7)' }
-    );
+        //Nav Items
+        gsap.utils.toArray('.nav-item').forEach((elem) => {
+            gsap.fromTo(
+                elem,
+                { opacity: 0, y: -20 },
+                { opacity: 1, y: 0, duration: 0.6, delay: 0.3, ease: 'power2.out' }
+            );
+        });
 
-    // Buttons
-    gsap.fromTo(
-        '.notification-button, .profile-icon',
-        { opacity: 0, x: 20 },
-        { opacity: 1, x: 0, duration: 0.5, delay: 0.5, ease: 'power2.out' }
-    );
-
-    // Filters
-    gsap.utils.toArray('.filter-select').forEach((elem, index) => {
+        // Search Input
         gsap.fromTo(
-            elem,
-            { opacity: 0, x: -20 },
-            { opacity: 1, x: 0, duration: 0.4, delay: 0.6 + index * 0.1, ease: 'power2.out' }
+            '.search-input',
+            { scale: 0.8, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 0.4, delay: 0.4, ease: 'back.out(1.7)' }
         );
-    });
 
-    gsap.fromTo(
-        '.apply-filters-button',
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, delay: 1, ease: 'power2.out' }
-    );
-
-    // Section Title
-    gsap.fromTo(
-        '.section-title',
-        { opacity: 0, y: -30 },
-        { opacity: 1, y: 0, duration: 0.6, delay: 1.2, ease: 'power3.out' }
-    );
-
-    // Dashboard Cards
-    gsap.utils.toArray('.dashboard-card').forEach((elem, index) => {
+        // Buttons
         gsap.fromTo(
-            elem,
-            { opacity: 0, y: 30 },
-            { opacity: 1, y: 0, duration: 0.7, delay: 1.4 + index * 0.1, ease: 'power3.out' }
-        );
-    });
-
-    // Gantt Buttons
-    gsap.utils.toArray('.gantt-button').forEach((elem, index) => {
-        gsap.fromTo(
-            elem,
+            '.notification-button, .profile-icon',
             { opacity: 0, x: 20 },
-            { opacity: 1, x: 0, duration: 0.5, delay: 1.6 + index * 0.1, ease: 'power2.out' }
+            { opacity: 1, x: 0, duration: 0.5, delay: 0.5, ease: 'power2.out' }
         );
-    });
 
-    function animateProgressBar(element, percentage, delay = 0) {
-        gsap.to(element, {
-            width: `${percentage}%`,
-            duration: 1,
-            delay: delay,
-            ease: "power3.out",
-            scrollTrigger: {
-                trigger: element.closest('.dashboard-card'), // Trigger when the card is in view
-                start: "top 80%", // Adjust as needed
-                end: "bottom 20%",
-                scrub: false,
-                once: true, // Only run the animation once
-            }
+        // Filters
+        gsap.utils.toArray('.filter-select').forEach((elem, index) => {
+            gsap.fromTo(
+                elem,
+                { opacity: 0, x: -20 },
+                { opacity: 1, x: 0, duration: 0.4, delay: 0.6 + index * 0.1, ease: 'power2.out' }
+            );
         });
-    }
 
-    function animateProjectStatusComplete(element, percentage, delay = 0) {
-        gsap.to(element, {
-            width: `${percentage}%`,
-            duration: 1,
-            delay: delay,
-            ease: "power3.out",
-            scrollTrigger: {
-                trigger: '.project-status-card', // Trigger when the card is in view
-                start: "top 80%", // Adjust as needed
-                end: "bottom 20%",
-                scrub: false,
-                once: true, // Only run the animation once
-            }
-        });
-    }
+        gsap.fromTo(
+            '.apply-filters-button',
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.5, delay: 1, ease: 'power2.out' }
+        );
 
-    function animateChart(chartId) {
-        const ctx = document.getElementById(chartId).getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['IT Projects', 'Marketing', 'Enterprise Projects', 'R&D'],
-                datasets: [{
-                    data: [12, 8, 15, 11],
-                    backgroundColor: [
-                        '#3B82F6',
-                        '#10B981',
-                        '#F59E0B',
-                        '#8B5CF6'
-                    ],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                animation: {
-                    animateRotate: true,
-                    animateScale: true,
-                    duration: 1000,
-                    easing: 'easeInOutCirc',
-                    delay: 0,
-                    scrollTrigger: {
-                        trigger: '.project-by-type-card', // Trigger when the card is in view
-                        start: "top 80%", // Adjust as needed
-                        end: "bottom 20%",
-                        scrub: false,
-                        once: true, // Only run the animation once
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            boxWidth: 12,
-                            padding: 15,
-                            font: {
-                                size: 11
-                            }
+        // Section Title
+        gsap.fromTo(
+            '.section-title',
+            { opacity: 0, y: -30 },
+            { opacity: 1, y: 0, duration: 0.6, delay: 1.2, ease: 'power3.out' }
+        );
+
+        // Dashboard Cards - only animate entry for cards not part of scroll animations
+        gsap.utils.toArray('.dashboard-card').forEach((elem, index) => {
+            // Skip cards that will be animated on scroll
+            const isScrollCard =
+                elem.classList.contains('gantt-chart-card') ||
+                elem.classList.contains('resource-overview-card') ||
+                elem.classList.contains('risk-overview-card') ||
+                elem.classList.contains('task-overview-card');
+
+            if (isScrollCard) return;
+
+            // Store card type in a data attribute for use in the callback
+            const cardType = elem.classList.contains('project-status-card') ? 'project-status' :
+                elem.classList.contains('project-by-type-card') ? 'project-type' :
+                    'other';
+
+            gsap.fromTo(
+                elem,
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.7,
+                    delay: 1.4 + index * 0.1,
+                    ease: 'power3.out',
+                    onComplete: function () {
+                        // When card animation completes, start its inner animations
+                        if (cardType === 'project-status') {
+                            // Animate status bars
+                            elem.querySelectorAll('[class*="project-status-complete"]').forEach((element) => {
+                                const percentage = element.dataset.value;
+                                animateProjectStatusComplete(element, percentage, 0);
+                            });
+                        } else if (cardType === 'project-type') {
+                            // Animate chart
+                            animateChart('projectTypeChart');
+                        } else {
+                            // For any other card types that aren't handled by scroll triggers
+                            // For task progress bars
+                            elem.querySelectorAll('.project-tasks-progress').forEach((element) => {
+                                const percentage = element.dataset.value;
+                                animateProgressBar(element, percentage, 0);
+                            });
+
+                            // For risk overview bars
+                            elem.querySelectorAll('[class*="risk-overview"]').forEach((element) => {
+                                const percentage = element.dataset.value;
+                                animateProgressBar(element, percentage, 0);
+                            });
+
+                            // For resource utilization bars
+                            elem.querySelectorAll('[class*="resource-utilization"]').forEach((element) => {
+                                const percentage = element.dataset.value;
+                                animateProgressBar(element, percentage, 0);
+                            });
                         }
+                    }
+                }
+            );
+        });
+
+        // Gantt Buttons
+        gsap.utils.toArray('.gantt-button').forEach((elem, index) => {
+            gsap.fromTo(
+                elem,
+                { opacity: 0, x: 20 },
+                { opacity: 1, x: 0, duration: 0.5, delay: 1.6 + index * 0.1, ease: 'power2.out' }
+            );
+        });
+
+        // Helper functions for animations
+        function animateProgressBar(element, percentage, delay = 0) {
+            gsap.fromTo(
+                element,
+                { width: '0%' },
+                {
+                    width: `${percentage}%`,
+                    duration: 1,
+                    delay: delay,
+                    ease: "power3.out"
+                }
+            );
+        }
+
+        function animateProjectStatusComplete(element, percentage, delay = 0) {
+            gsap.fromTo(
+                element,
+                { width: '0%' },
+                {
+                    width: `${percentage}%`,
+                    duration: 1,
+                    delay: delay,
+                    ease: "power3.out"
+                }
+            );
+        }
+
+        function animateChart(chartId) {
+            const ctx = document.getElementById(chartId).getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['IT Projects', 'Marketing', 'Enterprise Projects', 'R&D'],
+                    datasets: [{
+                        data: [12, 8, 15, 11],
+                        backgroundColor: [
+                            '#3B82F6',
+                            '#10B981',
+                            '#F59E0B',
+                            '#8B5CF6'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 1000,
+                        easing: 'easeInOutCirc',
+                        delay: 0
                     },
-                    tooltip: {
-                        backgroundColor: 'rgba(17, 24, 39, 0.9)',
-                        padding: 12,
-                        bodyFont: {
-                            size: 12
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15,
+                                font: {
+                                    size: 11
+                                }
+                            }
                         },
-                        titleFont: {
-                            size: 14
-                        },
-                        displayColors: false,
-                        callbacks: {
-                            label: function (context) {
-                                let label = context.label || '';
-                                let value = context.raw || 0;
-                                let total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                let percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} (${percentage}%)`;
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            padding: 12,
+                            bodyFont: {
+                                size: 12
+                            },
+                            titleFont: {
+                                size: 14
+                            },
+                            displayColors: false,
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.label || '';
+                                    let value = context.raw || 0;
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
                             }
                         }
                     }
                 }
+            });
+        }
+
+        function animateGanttTask(element, percentage, delay = 0) {
+            gsap.fromTo(
+                element,
+                { width: '0%' },
+                {
+                    width: `${percentage}%`,
+                    duration: 1,
+                    delay: delay,
+                    ease: "power3.out"
+                }
+            );
+        }
+
+        // Initialize ScrollTrigger animations
+        function initializeScrollAnimations() {
+            // ScrollTrigger for Gantt Chart Card
+            const ganttCard = document.querySelector('.gantt-chart-card');
+            if (ganttCard) {
+                gsap.fromTo(
+                    ganttCard,
+                    { opacity: 0, y: 30 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.7,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: ganttCard,
+                            start: "top 80%",  // Starts animation when top of element hits 80% from top of viewport
+                            toggleActions: "play none none none"
+                        },
+                        onComplete: function () {
+                            // Animate gantt tasks when gantt card animation completes
+                            ganttCard.querySelectorAll('[class*="gantt-task"]').forEach((element) => {
+                                const percentage = element.dataset.value;
+                                const delay = element.dataset.delay || 0;
+                                animateGanttTask(element, percentage, delay);
+                            });
+                        }
+                    }
+                );
             }
-        });
-    }
 
-    function animateGanttTask(element, percentage, delay = 0) {
-        gsap.to(element, {
-            width: `${percentage}%`,
-            duration: 1,
-            delay: delay,
-            ease: "power3.out",
-            scrollTrigger: {
-                trigger: element.closest('.gantt-chart-card'), // Trigger when the card is in view
-                start: "top 80%", // Adjust as needed
-                end: "bottom 20%",
-                scrub: false,
-                once: true, // Only run the animation once
+            // ScrollTrigger for Resource Overview Card
+            const resourceCard = document.querySelector('.resource-overview-card');
+            if (resourceCard) {
+                gsap.fromTo(
+                    resourceCard,
+                    { opacity: 0, y: 30 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.7,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: resourceCard,
+                            start: "top 80%",
+                            toggleActions: "play none none none"
+                        },
+                        onComplete: function () {
+                            // Animate resource utilization bars
+                            resourceCard.querySelectorAll('[class*="resource-utilization"]').forEach((element) => {
+                                const percentage = element.dataset.value;
+                                animateProgressBar(element, percentage, 0);
+                            });
+                        }
+                    }
+                );
             }
-        });
-    }
 
-    function startScrollTriggerAnimations() {
-        // Initialize ScrollTrigger
-        ScrollTrigger.refresh();
+            // ScrollTrigger for Risk Overview Card
+            const riskCard = document.querySelector('.risk-overview-card');
+            if (riskCard) {
+                gsap.fromTo(
+                    riskCard,
+                    { opacity: 0, y: 30 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.7,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: riskCard,
+                            start: "top 80%",
+                            toggleActions: "play none none none"
+                        },
+                        onComplete: function () {
+                            // Animate risk overview bars
+                            riskCard.querySelectorAll('[class*="risk-overview"]').forEach((element) => {
+                                const percentage = element.dataset.value;
+                                animateProgressBar(element, percentage, 0);
+                            });
+                        }
+                    }
+                );
+            }
 
-        // Animate Project Tasks Progress Bar
-        const projectTasksProgress = document.querySelector('.project-tasks-progress');
-        const projectTasksValue = projectTasksProgress.dataset.value;
-        animateProgressBar(projectTasksProgress, projectTasksValue);
+            // ScrollTrigger for Task Overview Card
+            const taskCard = document.querySelector('.task-overview-card');
+            if (taskCard) {
+                gsap.fromTo(
+                    taskCard,
+                    { opacity: 0, y: 30 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.7,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: taskCard,
+                            start: "top 80%",
+                            toggleActions: "play none none none"
+                        },
+                        onComplete: function () {
+                            // Animate task progress bars
+                            taskCard.querySelectorAll('.project-tasks-progress').forEach((element) => {
+                                const percentage = element.dataset.value;
+                                animateProgressBar(element, percentage, 0);
+                            });
+                        }
+                    }
+                );
+            }
 
-        // Animate Project Status Complete Bars
-        document.querySelectorAll('[class*="project-status-complete"]').forEach((element) => {
-            const percentage = element.dataset.value;
-            animateProjectStatusComplete(element, percentage);
-        });
-
-        // Animate Risk Overview Bars
-        document.querySelectorAll('[class*="risk-overview"]').forEach((element) => {
-            const percentage = element.dataset.value;
-            animateProgressBar(element, percentage);
-        });
-
-        // Animate Resource Utilization Bars
-        document.querySelectorAll('[class*="resource-utilization"]').forEach((element) => {
-            const percentage = element.dataset.value;
-            animateProgressBar(element, percentage);
-        });
-
-        // Project Type Chart
-        animateChart('projectTypeChart');
-
-        //Animate Gantt Tasks
-        document.querySelectorAll('[class*="gantt-task"]').forEach((element) => {
-            const percentage = element.dataset.value;
-            const delay = element.dataset.delay;
-            animateGanttTask(element, percentage, delay);
-        });
-
-    }
+            // Refresh ScrollTrigger to ensure all animations are working
+            ScrollTrigger.refresh();
+        }
 </script>
 </body>
 </html>
