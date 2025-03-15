@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPM Online - Modern Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f5f7fa;
+        }
+
+        .dashboard-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, #ffffff, #f5f7fa);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(59, 130, 246, 0.08);
+        }
+
+        .nav-item.active {
+            background-color: rgba(59, 130, 246, 0.12);
+            border-left: 3px solid #3b82f6;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        table tr td,
+        table tr th {
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .health-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .health-green {
+            background-color: #10B981;
+        }
+
+        .health-yellow {
+            background-color: #F59E0B;
+        }
+
+        .health-red {
+            background-color: #EF4444;
+        }
+
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            background-color: #E5E7EB;
+            overflow: hidden;
+        }
+
+        .progress-value {
+            height: 100%;
+            border-radius: 3px;
+            background-color: #3B82F6;
+        }
+
+        .gantt-task {
+            height: 24px;
+            border-radius: 12px;
+            margin: 4px 0;
+        }
+
+        .gantt-milestone {
+            width: 12px;
+            height: 12px;
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Top Navigation -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-8">
+                <h1 class="text-xl font-bold text-blue-900">PPM Online</h1>
+                <nav class="hidden md:flex space-x-4">
+                    <a href="#"
+                        class="px-3 py-2 text-sm font-medium text-blue-900 rounded-lg hover:bg-blue-50">Dashboard</a>
+                    <a href="#"
+                        class="px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50">Projects</a>
+                    <a href="#"
+                        class="px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50">Resources</a>
+                    <a href="#"
+                        class="px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50">Reports</a>
+                </nav>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </span>
+                    <input type="text"
+                        class="pl-10 pr-4 py-2 w-64 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Search projects, tasks, resources...">
+                </div>
+                <button class="p-1 rounded-full text-gray-500 hover:bg-gray-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <div
+                        class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-medium">
+                        JS</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filters Bar -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-wrap items-center gap-3 md:gap-6">
+                <div class="w-full md:w-auto">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Program</label>
+                    <select
+                        class="w-full md:w-48 px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="all">All</option>
+                        <option value="ppm">PPM Online</option>
+                    </select>
+                </div>
+                <div class="w-full md:w-auto">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Plan Name</label>
+                    <select
+                        class="w-full md:w-48 px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="all">All</option>
+                        <option value="roadmap">PPM Online 2025 Roadmap</option>
+                    </select>
+                </div>
+                <div class="w-full md:w-auto">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Region</label>
+                    <select
+                        class="w-full md:w-48 px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="all">All</option>
+                        <option value="emea">EMEA</option>
+                        <option value="na">North America</option>
+                    </select>
+                </div>
+                <div class="w-full md:w-auto md:ml-auto flex items-end">
+                    <button
+                        class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Portfolio Overview -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Portfolio Overview</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Project Tasks Card -->
+                <div class="dashboard-card bg-white p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Project Tasks</p>
+                            <h3 class="text-3xl font-bold text-gray-900 mt-2">46</h3>
+                        </div>
+                        <div class="p-2 bg-blue-50 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium text-gray-500">On track</span>
+                            <span class="font-medium text-gray-900">78%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-value" style="width: 78%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Cost Card -->
+                <div class="dashboard-card bg-white p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Project Cost</p>
+                            <h3 class="text-3xl font-bold text-gray-900 mt-2">4M</h3>
+                        </div>
+                        <div class="p-2 bg-green-50 rounded-lg">
+                            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-4">
+                        <span class="text-xs font-medium px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Variance:
+                            3.94M</span>
+                    </div>
+                </div>
+
+                <!-- Project Work Card -->
+                <div class="dashboard-card bg-white p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Project Work (hours)</p>
+                            <h3 class="text-3xl font-bold text-gray-900 mt-2">91K</h3>
+                        </div>
+                        <div class="p-2 bg-purple-50 rounded-lg">
+                            <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-4">
+                        <span class="text-xs font-medium px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Variance:
+                            86.25K</span>
+                    </div>
+                </div>
+
+                <!-- Risk Tasks Card -->
+                <div class="dashboard-card bg-white p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">At Risk Tasks</p>
+                            <h3 class="text-3xl font-bold text-gray-900 mt-2">17</h3>
+                        </div>
+                        <div class="p-2 bg-red-50 rounded-lg">
+                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-4">
+                        <span class="text-xs font-medium px-2 py-1 bg-red-100 text-red-800 rounded-full">Delayed Tasks:
+                            10</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects and Gantt Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Project Status -->
+            <div class="lg:col-span-2 dashboard-card bg-white overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-800">Project Status</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Plan
+                                    Name</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Health</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    %
+                                    Complete</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Owner
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">PPM Online
+                                    2025
+                                    Roadmap</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">In Progress</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="health-indicator health-green mr-2"></span>
+                                    <span class="text-sm text-gray-700">On Track</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 78%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-700">78%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Nowicki, Cindy</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">New Product
+                                    Launch
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Delayed</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="health-indicator health-red mr-2"></span>
+                                    <span class="text-sm text-gray-700">At Risk</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 5%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-700">5%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Nowicki, Cindy</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">Status Report
+                                    Mockup
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">In Progress</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="health-indicator health-yellow mr-2"></span>
+                                    <span class="text-sm text-gray-700">At Risk</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 16%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-700">16%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Nowicki, Cindy</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
+                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-800">View all projects</a>
+                </div>
+            </div>
+
+            <!-- Project by Type -->
+            <div class="dashboard-card bg-white overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-800">Project by Type</h3>
+                </div>
+                <div class="p-6">
+                    <canvas id="projectTypeChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gantt Chart and Risk Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Gantt Chart -->
+            <div class="lg:col-span-2 dashboard-card bg-white overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="font-semibold text-gray-800">Gantt Chart</h3>
+                    <div class="flex space-x-2">
+                        <button
+                            class="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Week</button>
+                        <button
+                            class="px-3 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100">Month</button>
+                        <button
+                            class="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Quarter</button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex flex-col space-y-3">
+                        <div class="flex items-center">
+                            <div class="w-1/4 text-sm font-medium text-gray-700">Logistic Strategy Q4 2023</div>
+                            <div class="w-3/4 relative">
+                                <div class="gantt-task bg-blue-500" style="width: 70%; margin-left: 10%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-1/4 text-sm font-medium text-gray-700 pl-4">Development Iteration 1</div>
+                            <div class="w-3/4 relative">
+                                <div class="gantt-task bg-green-500" style="width: 25%; margin-left: 15%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-1/4 text-sm font-medium text-gray-700 pl-4">Enhancement development</div>
+                            <div class="w-3/4 relative">
+                                <div class="gantt-task bg-green-400" style="width: 30%; margin-left: 25%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-1/4 text-sm font-medium text-gray-700 pl-4">Development Iteration 2</div>
+                            <div class="w-3/4 relative">
+                                <div class="gantt-task bg-purple-500" style="width: 25%; margin-left: 45%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-1/4 text-sm font-medium text-gray-700 pl-4">Iteration planning</div>
+                            <div class="w-3/4 relative">
+                                <div class="gantt-task bg-yellow-400" style="width: 15%; margin-left: 40%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Overview -->
+            <div class="dashboard-card bg-white overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-800">Risk Overview</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-gray-600">On Track</span>
+                                <span class="font-medium text-gray-900">119</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-2 bg-green-500 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-gray-600">At Risk</span>
+                                <span class="font-medium text-gray-900">17</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-2 bg-yellow-500 rounded-full" style="width: 15%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-gray-600">Delayed</span>
+                                <span class="font-medium text-gray-900">10</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-2 bg-red-500 rounded-full" style="width: 10%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-gray-600">Completed</span>
+                                <span class="font-medium text-gray-900">361</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-2 bg-blue-500 rounded-full" style="width: 80%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Overview and Resource Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Task Overview -->
+            <div class="dashboard-card bg-white overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-800">Task Overview</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Task
+                                    Name</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Health</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Due
+                                    Date</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Develop
+                                    campaign
+                                    schedules</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="health-indicator health-green mr-2"></span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">14-Mar-25</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="text-xs font-medium px-2 py-1 bg-green-100 text-green-800 rounded-full">On
+                                        Track</span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Perform inside
+                                    sales calls</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="health-indicator health-yellow mr-2"></span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">12-Mar-25</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="text-xs font-medium px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">At
+                                        Risk</span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Provide
+                                    pre-release information to
+                                    analysts</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="health-indicator health-green mr-2"></span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">12-Mar-25</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="text-xs font-medium px-2 py-1 bg-green-100 text-green-800 rounded-full">On
+                                        Track</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
+                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-800">View all tasks</a>
+                </div>
+            </div>
+
+            <!-- Resource Overview -->
+            <div class="dashboard-card bg-white overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-800">Resource Overview</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Resource
+                                    Name</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Assigned
+                                    Tasks</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Utilization</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Nowicki, Cindy
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">8</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 85%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-700">85%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="text-xs font-medium px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Overallocated</span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Pawlowski,
+                                    Adam</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">5</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 70%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-700">70%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="text-xs font-medium px-2 py-1 bg-green-100 text-green-800 rounded-full">Available</span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Fronczak, Anna
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">6</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 60%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-700">60%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="text-xs font-medium px-2 py-1 bg-green-100 text-green-800 rounded-full">Available</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
+                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-800">View all resources</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Chart.js charts
+        document.addEventListener('DOMContentLoaded', function () {
+            // Project Type Chart
+            const projectTypeCtx = document.getElementById('projectTypeChart').getContext('2d');
+            const projectTypeChart = new Chart(projectTypeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['IT Projects', 'Marketing', 'Enterprise Projects', 'R&D'],
+                    datasets: [{
+                        data: [12, 8, 15, 11],
+                        backgroundColor: [
+                            '#3B82F6',
+                            '#10B981',
+                            '#F59E0B',
+                            '#8B5CF6'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            padding: 12,
+                            bodyFont: {
+                                size: 12
+                            },
+                            titleFont: {
+                                size: 14
+                            },
+                            displayColors: false,
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.label || '';
+                                    let value = context.raw || 0;
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
